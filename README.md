@@ -70,6 +70,18 @@ A tabela `saude` possui os seguintes campos:
 | `pratica_exercicio` | TEXT | "Sim" ou "Não" |
 | `humor` | TEXT | Ótimo, Bom, Normal ou Ruim |
 
+## 🛠️ Funções de Gerenciamento do Banco de Dados
+
+O projeto inclui funções utilitárias para manutenção do banco de dados, disponíveis em `db_manager.py`:
+
+- **ver_todos_registros()**: Exibe todos os registros salvos no banco.
+- **limpar_registro(id)**: Remove apenas um registro específico pelo ID, com confirmação.
+- **limpar_banco()**: Remove todos os registros do banco, mantendo a estrutura da tabela (requer confirmação).
+- **resetar_banco()**: Apaga completamente o arquivo do banco de dados e recria a estrutura do zero (requer confirmação).
+- **menu()**: Menu interativo para executar as funções acima pelo terminal.
+
+> Para usar essas funções, execute `python db_manager.py` e siga as instruções do menu.
+
 ## 🔌 Endpoints da API
 
 ### POST `/salvar`
@@ -78,6 +90,7 @@ Salva um novo registro de saúde.
 **Corpo da requisição:**
 ```json
 {
+    "nome": "João",
     "consumo_agua": 8,
     "minutos_sol": 30,
     "pratica_exercicio": "Sim",
@@ -94,22 +107,7 @@ Salva um novo registro de saúde.
 ```
 
 ### GET `/historico`
-Retorna todo o histórico de registros.
-
-**Resposta:**
-```json
-[
-    {
-        "id": 1,
-        "data": "2026-03-05 10:30:45",
-        "consumo_agua": 8,
-        "minutos_sol": 30,
-        "pratica_exercicio": "Sim",
-        "humor": "Ótimo"
-    },
-    ...
-]
-```
+Renderiza a página de histórico de registros salvos.
 
 ### GET `/`
 Renderiza a página principal com o formulário.
