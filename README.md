@@ -55,6 +55,7 @@ ADS - Monitoramento de saúde/
 ├── README.md            # Este arquivo
 └── templates/
     └── form.html        # Formulário web
+    └── historico.html        # historico web
 ```
 
 ## 💾 Banco de Dados
@@ -65,6 +66,7 @@ A tabela `saude` possui os seguintes campos:
 |-------|------|-----------|
 | `id` | INTEGER | Identificador único (chave primária) |
 | `data_registro` | TIMESTAMP | Data e hora do registro |
+| `nome` | TEXT | Nome de quem preencheu o registro |
 | `consumo_agua` | INTEGER | Quantidade de água em litros |
 | `minutos_sol` | INTEGER | Minutos de exposição ao sol |
 | `pratica_exercicio` | TEXT | "Sim" ou "Não" |
