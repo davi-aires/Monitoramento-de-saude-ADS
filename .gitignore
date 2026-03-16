@@ -1,0 +1,49 @@
+# Ambiente Virtual
+.venv/
+venv/
+env/
+ENV/
+.env/
+
+# Banco de Dados
+database.db
+*.db
+
+# Cache Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+*.pot
+
+# Distribuição
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+
+# Markdown (exceto README.md)
+*.md
+!README.md

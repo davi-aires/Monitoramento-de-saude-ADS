@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoramento de Saúde</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input[type="number"],
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus,
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-suffix {
+            position: relative;
+        }
+
+        .suffix-text {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 12px;
+            pointer-events: none;
+            margin-top: 20px;
+        }
+
+        .form-group.input-suffix input {
+            padding-right: 35px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .radio-option input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .radio-option label {
+            margin: 0;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .select-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .select-group input[type="radio"] {
+            display: none;
+        }
+
+        .select-group label {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .select-group input[type="radio"]:checked + label {
+            background-color: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .alert {
+            padding: 14px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .alert.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-10px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .voltar {
+            display: inline-block;
+            margin-top: 20px;
+            text-align: center;
+            padding: 12px;
+            background: #f0f0f0;
+            color: #333;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.3s, transform 0.3s;
+        }
+
+        .voltar:hover {
+            background: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        .voltar:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💚 Monitoramento de Saúde</h1>
+            <p>Registre seus dados de saúde do dia</p>
+        </div>
+
+        <div class="alert" id="alertBox"></div>
+
+        <form id="formulario">
+            <!-- Identificador -->
+            <div class="form-group input-suffix">
+                <label for="nome">Nome</label>
+                <input
+                    type="text"
+                    id="nome"
+                    name="nome"
+                    placeholder="Digite seu nome..."
+                    required
+                >
+            </div>
+
+            <!-- Consumo de Água -->
+            <div class="form-group input-suffix">
+                <label for="consumo_agua">Consumo de Água Diário</label>
+                <input
+                    type="number"
+                    id="consumo_agua"
+                    name="consumo_agua"
+                    min="0"
+                    max="20"
+                    placeholder="Ex: 8"
+                    required
+                >
+                <span class="suffix-text">litros</span>
+            </div>
+
+            <!-- Minutos no Sol -->
+            <div class="form-group input-suffix">
+                <label for="minutos_sol">Minutos no Sol por Dia</label>
+                <input
+                    type="number"
+                    id="minutos_sol"
+                    name="minutos_sol"
+                    min="0"
+                    max="480"
+                    placeholder="Ex: 30"
+                    required
+                >
+                <span class="suffix-text">minutos</span>
+            </div>
+
+            <!-- Prática de Exercício -->
+            <div class="form-group">
+                <label>Praticou Exercício?</label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input
+                            type="radio"
+                            id="exercicio_sim"
+                            name="pratica_exercicio"
+                            value="Sim"
+                            required
+                        >
+                        <label for="exercicio_sim">Sim</label>
+                    </div>
+                    <div class="radio-option">
+                        <input
+                            type="radio"
+                            id="exercicio_nao"
+                            name="pratica_exercicio"
+                            value="Não"
+                            required
+                        >
+                        <label for="exercicio_nao">Não</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Humor do Dia -->
+            <div class="form-group">
+                <label>Como está seu humor?</label>
+                <div class="select-group">
+                    <input
+                        type="radio"
+                        id="humor_otimo"
+                        name="humor"
+                        value="Ótimo"
+                        required
+                    >
+                    <label for="humor_otimo">😄 Ótimo</label>
+
+                    <input
+                        type="radio"
+                        id="humor_bom"
+                        name="humor"
+                        value="Bom"
+                        required
+                    >
+                    <label for="humor_bom">🙂 Bom</label>
+
+                    <input
+                        type="radio"
+                        id="humor_normal"
+                        name="humor"
+                        value="Normal"
+                        required
+                    >
+                    <label for="humor_normal">😐 Normal</label>
+
+                    <input
+                        type="radio"
+                        id="humor_ruim"
+                        name="humor"
+                        value="Ruim"
+                        required
+                    >
+                    <label for="humor_ruim">😔 Ruim</label>
+                </div>
+            </div>
+
+            <button type="submit" id="btnEnviar">Salvar Dados</button>
+        </form>
+
+        <a href="/historico" class="voltar" style="display:inline-block;margin-top:20px;text-align:center;">Histórico de registros</a>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <script>
+        const formulario = document.getElementById('formulario');
+        const alertBox = document.getElementById('alertBox');
+        const loading = document.getElementById('loading');
+        const btnEnviar = document.getElementById('btnEnviar');
+
+        formulario.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Coletar dados
+            const dados = {
+                nome: document.getElementById('nome').value,
+                consumo_agua: document.getElementById('consumo_agua').value,
+                minutos_sol: document.getElementById('minutos_sol').value,
+                pratica_exercicio: document.querySelector('input[name="pratica_exercicio"]:checked').value,
+                humor: document.querySelector('input[name="humor"]:checked').value
+            };
+
+            // Mostrar loading
+            loading.style.display = 'block';
+            btnEnviar.disabled = true;
+            alertBox.style.display = 'none';
+
+            try {
+                const response = await fetch('/salvar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(dados)
+                });
+
+                const resultado = await response.json();
+
+                if (response.ok) {
+                    // Sucesso
+                    alertBox.className = 'alert success';
+                    alertBox.innerHTML = '✓ ' + resultado.mensagem;
+                    alertBox.style.display = 'block';
+
+                    // Limpar formulário
+                    formulario.reset();
+
+                    // Remover mensagem após 4 segundos
+                    setTimeout(() => {
+                        alertBox.style.display = 'none';
+                    }, 4000);
+                } else {
+                    // Erro
+                    alertBox.className = 'alert error';
+                    alertBox.innerHTML = '✕ ' + resultado.mensagem;
+                    alertBox.style.display = 'block';
+                }
+            } catch (error) {
+                alertBox.className = 'alert error';
+                alertBox.innerHTML = '✕ Erro ao conectar com o servidor: ' + error.message;
+                alertBox.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+                btnEnviar.disabled = false;
+            }
+        });
+
+        // Set input como hoje
+        document.addEventListener('DOMContentLoaded', function() {
+            // Você pode adicionar qualquer inicialização aqui
+        });
+    </script>
+</body>
+</html>
+
