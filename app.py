@@ -53,11 +53,16 @@ def salvar_dados():
 
 @app.route('/historico')
 def historico():
-    """Renderiza a página de histórico de dados registrados"""
+    """Renderiza a página de histórico de dados registrados, com filtro por nome"""
     try:
+        nome_filtro = request.args.get('nome', '').strip()
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute('SELECT * FROM saude ORDER BY data_registro DESC')
+        if nome_filtro:
+            cursor.execute('SELECT * FROM saude WHERE nome LIKE ? ORDER BY data_registro DESC', (f'%{nome_filtro}%',))
+        else:
+            cursor.execute('SELECT * FROM saude ORDER BY data_registro DESC')
+
         registros = cursor.fetchall()
         cursor.close()
         conn.close()
