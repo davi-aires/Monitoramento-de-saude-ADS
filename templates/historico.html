@@ -12,17 +12,63 @@
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--page-bg);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            color: var(--text-color);
+
+            --page-bg: radial-gradient(circle at top, #a855f7 0%, #4c1d95 42%, #160026 100%);
+            --card-bg: linear-gradient(145deg, rgba(15,23,42,0.98), rgba(17,24,39,0.98));
+            --card-shadow: 0 20px 45px rgba(15,23,42,0.95);
+            --card-border: rgba(55,65,81,0.85);
+
+            --text-color: #e5e7eb;
+            --muted-color: #9ca3af;
+            --heading-color: #f9fafb;
+
+            --th-text: #ffffff;
+            --th-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --tr-even-bg: rgba(255,255,255,0.04);
+            --tr-hover-bg: rgba(165,180,252,0.12);
+
+            --search-input-bg: #120024;
+            --search-input-border: rgba(148,163,184,0.35);
+            --search-input-text: #e5e7eb;
+
+            /* Botão de tema destacado (parecido com "Voltar", mas com mais presença) */
+            --toggle-bg: linear-gradient(135deg, rgba(102,126,234,0.28) 0%, rgba(118,75,162,0.28) 100%);
+            --toggle-border: rgba(102,126,234,0.70);
+            --toggle-hover-bg: linear-gradient(135deg, rgba(102,126,234,0.38) 0%, rgba(118,75,162,0.38) 100%);
+        }
+        body[data-theme="light"] {
+            --page-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-bg: #ffffff;
+            --card-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            --card-border: rgba(124,58,237,0.18);
+
+            --text-color: #333;
+            --muted-color: #666;
+            --heading-color: #333;
+
+            --tr-even-bg: #f6f6f6;
+            --tr-hover-bg: #e9e9ff;
+
+            --search-input-bg: #ffffff;
+            --search-input-border: #d1d5db;
+            --search-input-text: #111827;
+
+            --toggle-bg: linear-gradient(135deg, rgba(102,126,234,0.18) 0%, rgba(118,75,162,0.18) 100%);
+            --toggle-border: rgba(124,58,237,0.45);
+            --toggle-hover-bg: linear-gradient(135deg, rgba(102,126,234,0.26) 0%, rgba(118,75,162,0.26) 100%);
         }
         .container {
-            background: white;
+            background: var(--card-bg);
             border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--card-border);
             max-width: 900px;
             width: 100%;
             padding: 40px;
@@ -32,12 +78,12 @@
             margin-bottom: 30px;
         }
         .header h1 {
-            color: #333;
+            color: var(--heading-color);
             font-size: 28px;
             margin-bottom: 10px;
         }
         .header p {
-            color: #666;
+            color: var(--muted-color);
             font-size: 14px;
         }
         table {
@@ -50,15 +96,46 @@
             text-align: center;
         }
         th {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: var(--th-bg);
+            color: var(--th-text);
             font-weight: 600;
         }
         tr:nth-child(even) {
-            background-color: #f6f6f6;
+            background-color: var(--tr-even-bg);
         }
         tr:hover {
-            background-color: #e9e9ff;
+            background-color: var(--tr-hover-bg);
+        }
+        .theme-toggle-wrap {
+            display: flex;
+            justify-content: flex-end;
+            margin: -10px 0 18px 0;
+        }
+        .theme-toggle {
+            border: 1px solid var(--toggle-border);
+            background: var(--toggle-bg);
+            color: var(--text-color);
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(168,85,247,0.18);
+            transition: background 0.2s, transform 0.1s, filter 0.15s, box-shadow 0.2s;
+        }
+        .theme-toggle:hover {
+            background: var(--toggle-hover-bg);
+            transform: translateY(-1px);
+            box-shadow: 0 16px 35px rgba(168,85,247,0.26);
+        }
+        .search-input {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid var(--search-input-border);
+            width: 220px;
+            background: var(--search-input-bg);
+            color: var(--search-input-text);
+            outline: none;
         }
         .voltar {
             display: inline-block;
@@ -86,9 +163,12 @@
             <h1>📊 Histórico de Saúde</h1>
             <p>Veja todos os registros salvos</p>
         </div>
+        <div class="theme-toggle-wrap">
+            <button type="button" id="themeToggle" class="theme-toggle" aria-pressed="false">Tema Light</button>
+        </div>
         <!-- Formulário de busca por nome -->
         <form method="get" action="/historico" style="margin-bottom: 20px; text-align: center;">
-            <input type="text" name="nome" placeholder="Pesquisar por nome" value="{{ request.args.get('nome', '') }}" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc; width: 220px;">
+            <input class="search-input" type="text" name="nome" placeholder="Pesquisar por nome" value="{{ request.args.get('nome', '') }}">
             <button type="submit" style="padding: 8px 16px; border-radius: 4px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; font-weight: 600; cursor: pointer;">Buscar</button>
         </form>
         <table>
@@ -121,5 +201,29 @@
         </table>
         <a href="/" class="voltar">Voltar</a>
     </div>
+    <script>
+        // Tema (salva no navegador)
+        (function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const saved = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const initial = saved ? saved : (prefersDark ? 'dark' : 'light');
+
+            function applyTheme(theme) {
+                document.body.dataset.theme = theme;
+                localStorage.setItem('theme', theme);
+                const isLight = theme === 'light';
+                themeToggle.textContent = isLight ? 'Tema Dark' : 'Tema Light';
+                themeToggle.setAttribute('aria-pressed', String(isLight));
+            }
+
+            applyTheme(initial);
+
+            themeToggle.addEventListener('click', function() {
+                const current = document.body.dataset.theme === 'light' ? 'light' : 'dark';
+                applyTheme(current === 'light' ? 'dark' : 'light');
+            });
+        })();
+    </script>
 </body>
 </html>

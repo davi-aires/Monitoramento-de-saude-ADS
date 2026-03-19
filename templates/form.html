@@ -13,18 +13,87 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+
+            /* Tema base (escuro) - roxo ao invés de preto */
+            --page-bg: radial-gradient(circle at top, #a855f7 0%, #4c1d95 42%, #160026 100%);
+            --card-bg: linear-gradient(145deg, rgba(15,23,42,0.98), rgba(17,24,39,0.98));
+            --card-shadow: 0 20px 45px rgba(15,23,42,0.95);
+            --card-border: rgba(55,65,81,0.9);
+
+            --text-color: #e5e7eb;
+            --muted-color: #9ca3af;
+            --heading-color: #f9fafb;
+            --label-color: #9ca3af;
+
+            --input-bg: #120024;
+            --input-border: #374151;
+            --input-focus-border: #667eea;
+            --input-text-color: #e5e7eb;
+
+            --suffix-text-color: #6b7280;
+
+            --btn-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --btn-hover-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+
+            --spinner-base-border: #374151;
+            --spinner-top-border: #667eea;
+
+            /* Botão "Histórico" com contraste visível (dark) */
+            --voltar-bg: linear-gradient(135deg, rgba(102,126,234,0.22) 0%, rgba(118,75,162,0.22) 100%);
+            --voltar-color: #e5e7eb;
+            --voltar-hover-bg: linear-gradient(135deg, rgba(102,126,234,0.30) 0%, rgba(118,75,162,0.30) 100%);
+            --voltar-hover-color: #e5e7eb;
+
+            /* Botão de tema destacado (mesmo roxo do "Histórico", porém mais forte) */
+            --toggle-bg: linear-gradient(135deg, rgba(102,126,234,0.28) 0%, rgba(118,75,162,0.28) 100%);
+            --toggle-border: rgba(102,126,234,0.70);
+            --toggle-hover-bg: linear-gradient(135deg, rgba(102,126,234,0.38) 0%, rgba(118,75,162,0.38) 100%);
+
+            background: var(--page-bg);
+            color: var(--text-color);
+        }
+
+        body[data-theme="light"] {
+            /* Tema Light (roxo/branco) */
+            --page-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-bg: linear-gradient(145deg, #ffffff 0%, #f5f3ff 100%);
+            --card-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            --card-border: rgba(124,58,237,0.18);
+
+            --text-color: #333;
+            --muted-color: #666;
+            --heading-color: #333;
+            --label-color: #333;
+
+            --input-bg: #ffffff;
+            --input-border: #e0e0e0;
+            --input-focus-border: #667eea;
+            --input-text-color: #111827;
+
+            --suffix-text-color: #999;
+
+            /* Espelha o "nível de roxo" do botão principal */
+            --voltar-bg: linear-gradient(135deg, rgba(102,126,234,0.16) 0%, rgba(118,75,162,0.16) 100%);
+            --voltar-color: #333;
+            --voltar-hover-bg: linear-gradient(135deg, rgba(102,126,234,0.26) 0%, rgba(118,75,162,0.26) 100%);
+            --voltar-hover-color: #333;
+
+            /* Light: mesma ideia, mas claro (prioriza contraste) */
+            --toggle-bg: linear-gradient(135deg, rgba(102,126,234,0.18) 0%, rgba(118,75,162,0.18) 100%);
+            --toggle-border: rgba(124,58,237,0.45);
+            --toggle-hover-bg: linear-gradient(135deg, rgba(102,126,234,0.26) 0%, rgba(118,75,162,0.26) 100%);
         }
 
         .container {
-            background: white;
+            background: var(--card-bg);
             border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--card-border);
             max-width: 500px;
             width: 100%;
             padding: 40px;
@@ -36,13 +105,13 @@
         }
 
         .header h1 {
-            color: #333;
+            color: var(--heading-color);
             font-size: 28px;
             margin-bottom: 10px;
         }
 
         .header p {
-            color: #666;
+            color: var(--muted-color);
             font-size: 14px;
         }
 
@@ -52,7 +121,7 @@
 
         label {
             display: block;
-            color: #333;
+            color: var(--label-color);
             font-weight: 600;
             margin-bottom: 8px;
             font-size: 14px;
@@ -63,10 +132,12 @@
         select {
             width: 100%;
             padding: 12px;
-            border: 2px solid #e0e0e0;
+            border: 2px solid var(--input-border);
             border-radius: 6px;
             font-size: 14px;
             font-family: inherit;
+            background: var(--input-bg);
+            color: var(--input-text-color);
             transition: border-color 0.3s;
         }
 
@@ -74,7 +145,19 @@
         input[type="text"]:focus,
         select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--input-focus-border);
+        }
+
+        /* Remove os botões de aumentar/diminuir do input number */
+        input[type="number"] {
+            appearance: textfield;
+            -moz-appearance: textfield;
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
 
         .input-suffix {
@@ -86,7 +169,7 @@
             right: 12px;
             top: 50%;
             transform: translateY(-50%);
-            color: #999;
+            color: var(--suffix-text-color);
             font-size: 12px;
             pointer-events: none;
             margin-top: 20px;
@@ -134,13 +217,15 @@
 
         .select-group label {
             padding: 12px;
-            border: 2px solid #e0e0e0;
+            border: 2px solid var(--input-border);
             border-radius: 6px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
             font-weight: 500;
             margin: 0;
+            background: var(--input-bg);
+            color: var(--input-text-color);
         }
 
         .select-group input[type="radio"]:checked + label {
@@ -152,7 +237,7 @@
         button {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--btn-bg);
             color: white;
             border: none;
             border-radius: 6px;
@@ -165,7 +250,7 @@
 
         button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: var(--btn-hover-shadow);
         }
 
         button:active {
@@ -210,8 +295,8 @@
         }
 
         .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
+            border: 3px solid var(--spinner-base-border);
+            border-top: 3px solid var(--spinner-top-border);
             border-radius: 50%;
             width: 24px;
             height: 24px;
@@ -229,8 +314,8 @@
             margin-top: 20px;
             text-align: center;
             padding: 12px;
-            background: #f0f0f0;
-            color: #333;
+            background: var(--voltar-bg);
+            color: var(--voltar-color);
             border-radius: 6px;
             text-decoration: none;
             font-weight: 500;
@@ -238,20 +323,51 @@
         }
 
         .voltar:hover {
-            background: #e0e0e0;
+            background: var(--voltar-hover-bg);
+            color: var(--voltar-hover-color);
             transform: translateY(-2px);
         }
 
         .voltar:active {
             transform: translateY(0);
         }
+
+        .theme-toggle-wrap {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: -10px;
+            margin-bottom: 18px;
+        }
+
+        .theme-toggle {
+            border: 1px solid var(--toggle-border);
+            background: var(--toggle-bg);
+            color: var(--text-color);
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(168,85,247,0.18);
+            transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+        }
+
+        .theme-toggle:hover {
+            background: var(--toggle-hover-bg);
+            transform: translateY(-1px);
+            box-shadow: 0 16px 35px rgba(168,85,247,0.26);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>💚 Monitoramento de Saúde</h1>
+            <h1>💜 Monitoramento de Saúde</h1>
             <p>Registre seus dados de saúde do dia</p>
+        </div>
+
+        <div class="theme-toggle-wrap">
+            <button type="button" id="themeToggle" class="theme-toggle" aria-pressed="false">Tema Light</button>
         </div>
 
         <div class="alert" id="alertBox"></div>
@@ -379,6 +495,29 @@
     </div>
 
     <script>
+        // Tema (salva no navegador)
+        (function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const saved = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const initial = saved ? saved : (prefersDark ? 'dark' : 'light');
+
+            function applyTheme(theme) {
+                document.body.dataset.theme = theme;
+                localStorage.setItem('theme', theme);
+                const isLight = theme === 'light';
+                themeToggle.textContent = isLight ? 'Tema Dark' : 'Tema Light';
+                themeToggle.setAttribute('aria-pressed', String(isLight));
+            }
+
+            applyTheme(initial);
+
+            themeToggle.addEventListener('click', function() {
+                const current = document.body.dataset.theme === 'light' ? 'light' : 'dark';
+                applyTheme(current === 'light' ? 'dark' : 'light');
+            });
+        })();
+
         const formulario = document.getElementById('formulario');
         const alertBox = document.getElementById('alertBox');
         const loading = document.getElementById('loading');
