@@ -73,6 +73,11 @@
             width: 100%;
             padding: 40px;
         }
+        .table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 8px;
+        }
         .header {
             text-align: center;
             margin-bottom: 30px;
@@ -90,10 +95,12 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            min-width: 600px;
         }
         th, td {
             padding: 12px 8px;
             text-align: center;
+            white-space: nowrap;
         }
         th {
             background: var(--th-bg);
@@ -155,6 +162,53 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
         }
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            .header h1 {
+                font-size: 22px;
+            }
+            .search-input {
+                width: 100%;
+                max-width: 220px;
+                margin-bottom: 10px;
+            }
+            th, td {
+                padding: 10px 6px;
+                font-size: 13px;
+            }
+            table {
+                min-width: 500px;
+            }
+        }
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            .header h1 {
+                font-size: 18px;
+            }
+            .header p {
+                font-size: 12px;
+            }
+            .search-input {
+                width: 100%;
+                padding: 6px;
+                font-size: 12px;
+            }
+            th, td {
+                padding: 8px 4px;
+                font-size: 11px;
+            }
+            table {
+                min-width: 450px;
+            }
+            .theme-toggle {
+                padding: 8px 10px;
+                font-size: 11px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -171,7 +225,8 @@
             <input class="search-input" type="text" name="nome" placeholder="Pesquisar por nome" value="{{ request.args.get('nome', '') }}">
             <button type="submit" style="padding: 8px 16px; border-radius: 4px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; font-weight: 600; cursor: pointer;">Buscar</button>
         </form>
-        <table>
+        <div class="table-wrapper">
+            <table>
             <thead>
                 <tr>
                     <th>Data</th>
@@ -198,7 +253,8 @@
                 </tr>
                 {% endfor %}
             </tbody>
-        </table>
+            </table>
+        </div>
         <a href="/" class="voltar">Voltar</a>
     </div>
     <script>
