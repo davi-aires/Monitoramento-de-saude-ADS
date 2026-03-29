@@ -162,6 +162,118 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
         }
+        .exportar {
+            display: inline-block;
+            margin-top: 20px;
+            margin-left: 12px;
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .exportar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);
+        }
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 32px 28px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            animation: modalIn 0.2s ease;
+        }
+        @keyframes modalIn {
+            from { transform: translateY(-16px); opacity: 0; }
+            to   { transform: translateY(0);     opacity: 1; }
+        }
+        .modal h2 {
+            color: var(--heading-color);
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+        .modal p {
+            color: var(--muted-color);
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+        .modal input[type="email"] {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--search-input-border);
+            background: var(--search-input-bg);
+            color: var(--search-input-text);
+            font-size: 14px;
+            outline: none;
+            margin-bottom: 18px;
+            transition: border-color 0.2s;
+        }
+        .modal input[type="email"]:focus {
+            border-color: #667eea;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .btn-cancelar {
+            padding: 9px 20px;
+            border-radius: 6px;
+            border: 1px solid var(--search-input-border);
+            background: transparent;
+            color: var(--text-color);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-cancelar:hover { background: rgba(255,255,255,0.07); }
+        .btn-enviar {
+            padding: 9px 20px;
+            border-radius: 6px;
+            border: none;
+            background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-enviar:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(16,185,129,0.4);
+        }
+        .modal-feedback {
+            font-size: 13px;
+            margin-bottom: 12px;
+            min-height: 18px;
+            text-align: center;
+        }
+        .modal-feedback.sucesso { color: #10b981; }
+        .modal-feedback.erro    { color: #f87171; }
         @media (max-width: 768px) {
             .container {
                 padding: 20px;
@@ -256,6 +368,21 @@
             </table>
         </div>
         <a href="/" class="voltar">Voltar</a>
+        <button class="exportar" onclick="abrirModal()">📤 Exportar por E-mail</button>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <h2>📤 Exportar Relatório</h2>
+            <p>Digite o e-mail que receberá o relatório Excel com todos os registros.</p>
+            <input type="email" id="emailDestinatario" placeholder="exemplo@email.com" />
+            <div class="modal-feedback" id="modalFeedback"></div>
+            <div class="modal-actions">
+                <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
+                <button class="btn-enviar" id="btnEnviar" onclick="enviarRelatorio()">Enviar</button>
+            </div>
+        </div>
     </div>
     <script>
         // Tema (salva no navegador)
@@ -280,6 +407,68 @@
                 applyTheme(current === 'light' ? 'dark' : 'light');
             });
         })();
+
+        // Modal de exportação
+        function abrirModal() {
+            document.getElementById('modalOverlay').classList.add('active');
+            document.getElementById('emailDestinatario').focus();
+            document.getElementById('modalFeedback').textContent = '';
+            document.getElementById('emailDestinatario').value = '';
+        }
+        function fecharModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) fecharModal();
+        });
+        document.getElementById('emailDestinatario').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') enviarRelatorio();
+        });
+        async function enviarRelatorio() {
+            const email = document.getElementById('emailDestinatario').value.trim();
+            const feedback = document.getElementById('modalFeedback');
+            const btn = document.getElementById('btnEnviar');
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!email) {
+                feedback.textContent = 'Por favor, informe um e-mail.';
+                feedback.className = 'modal-feedback erro';
+                return;
+            }
+            if (!emailRegex.test(email)) {
+                feedback.textContent = 'E-mail inválido. Verifique e tente novamente.';
+                feedback.className = 'modal-feedback erro';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Enviando...';
+            feedback.textContent = '';
+            feedback.className = 'modal-feedback';
+
+            try {
+                const resp = await fetch('/exportar-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ destinatario: email })
+                });
+                const data = await resp.json();
+                if (data.sucesso) {
+                    feedback.textContent = '✅ Relatório enviado com sucesso!';
+                    feedback.className = 'modal-feedback sucesso';
+                    setTimeout(fecharModal, 2000);
+                } else {
+                    feedback.textContent = '❌ ' + data.mensagem;
+                    feedback.className = 'modal-feedback erro';
+                }
+            } catch (err) {
+                feedback.textContent = '❌ Erro ao conectar com o servidor.';
+                feedback.className = 'modal-feedback erro';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Enviar';
+            }
+        }
     </script>
 </body>
 </html>

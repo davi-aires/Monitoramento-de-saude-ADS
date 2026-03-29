@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import sqlite3
-from db_manager import init_db, DATABASE
+import re
+from db_manager import init_db, DATABASE, enviar_relatorio_email
 
 app = Flask(__name__)
 
@@ -83,6 +84,34 @@ def historico():
 
     except Exception as e:
         return render_template('historico.html', registros=[], erro=f'Erro ao buscar histórico: {str(e)}')
+
+
+@app.route('/exportar-email', methods=['POST'])
+def exportar_email():
+    """Gera o relatório Excel e envia para o e-mail informado"""
+    try:
+        dados = request.get_json()
+        destinatario = dados.get('destinatario', '').strip()
+
+        if not destinatario:
+            return jsonify({'sucesso': False, 'mensagem': 'E-mail do destinatário é obrigatório!'}), 400
+
+        email_regex = r'^[^\s@]+@[^\s@]+\.[^\s@]+$'
+        if not re.match(email_regex, destinatario):
+            return jsonify({'sucesso': False, 'mensagem': 'E-mail inválido!'}), 400
+
+        REMETENTE = "daviaireslage@gmail.com"
+        SENHA_APP = "xlclnpbfosbuifib"
+
+        sucesso = enviar_relatorio_email(destinatario, REMETENTE, SENHA_APP)
+
+        if sucesso:
+            return jsonify({'sucesso': True, 'mensagem': 'Relatório enviado com sucesso!'})
+        else:
+            return jsonify({'sucesso': False, 'mensagem': 'Falha ao enviar o e-mail. Verifique as credenciais.'}), 500
+
+    except Exception as e:
+        return jsonify({'sucesso': False, 'mensagem': f'Erro: {str(e)}'}), 500
 
 
 if __name__ == '__main__':
