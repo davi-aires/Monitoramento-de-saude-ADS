@@ -1,7 +1,11 @@
 from flask import Flask, render_template, request, jsonify
 import sqlite3
 import re
+import os
+from dotenv import load_dotenv
 from db_manager import init_db, DATABASE, enviar_relatorio_email
+
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -100,8 +104,11 @@ def exportar_email():
         if not re.match(email_regex, destinatario):
             return jsonify({'sucesso': False, 'mensagem': 'E-mail inválido!'}), 400
 
-        REMETENTE = "daviaireslage@gmail.com"
-        SENHA_APP = "xlclnpbfosbuifib"
+        REMETENTE = os.getenv("EMAIL_REMETENTE")
+        SENHA_APP = os.getenv("EMAIL_SENHA")
+
+        if not REMETENTE or not SENHA_APP:
+            return jsonify({'sucesso': False, 'mensagem': 'Credenciais de e-mail não configuradas no .env'}), 500
 
         sucesso = enviar_relatorio_email(destinatario, REMETENTE, SENHA_APP)
 

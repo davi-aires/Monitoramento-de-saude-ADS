@@ -6,6 +6,9 @@ Use este arquivo para operações de manutenção
 import sqlite3
 import os
 import smtplib
+from dotenv import load_dotenv
+
+load_dotenv()
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
@@ -241,10 +244,14 @@ def enviar_relatorio_email(destinatario, remetente, senha_app, arquivo_excel=Non
 
 
 def configurar_e_enviar():
-    """Envia o relatório por e-mail com credenciais pré-configuradas"""
-    REMETENTE    = "daviaireslage@gmail.com"
-    SENHA_APP    = "xlclnpbfosbuifib"
-    DESTINATARIO = "daviaireslage@gmail.com"
+    """Envia o relatório por e-mail com credenciais carregadas do .env"""
+    REMETENTE    = os.getenv("EMAIL_REMETENTE")
+    SENHA_APP    = os.getenv("EMAIL_SENHA")
+    DESTINATARIO = os.getenv("EMAIL_DESTINATARIO")
+
+    if not all([REMETENTE, SENHA_APP, DESTINATARIO]):
+        print("❌ Configure EMAIL_REMETENTE, EMAIL_SENHA e EMAIL_DESTINATARIO no arquivo .env")
+        return
 
     print("\n⏳ Gerando relatório e enviando e-mail...")
     enviar_relatorio_email(DESTINATARIO, REMETENTE, SENHA_APP)
