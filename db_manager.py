@@ -1,47 +1,89 @@
-"""
+﻿"""
 Arquivo auxiliar para gerenciar o banco de dados
 Use este arquivo para operações de manutenção
 """
 
 import sqlite3
 import os
-import smtplib
 from dotenv import load_dotenv
 
 load_dotenv()
-from email.mime.multipart import MIMEMultipart
-from email.mime.base import MIMEBase
-from email.mime.text import MIMEText
-from email import encoders
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATABASE = os.path.join(BASE_DIR, "database.db")
+DATABASE_URL = os.getenv('DATABASE_URL')  # Render define automaticamente
+
+BR_TZ = ZoneInfo('America/Sao_Paulo')
+
+def agora_br():
+    """Datetime atual no fuso de Brasília, sem tzinfo"""
+    return datetime.now(BR_TZ).replace(tzinfo=None)
+
+def ph():
+    """Placeholder para query: '?' no SQLite, '%s' no PostgreSQL"""
+    return '%s' if DATABASE_URL else '?'
+
+def get_db_connection():
+    """Conexão com SQLite local ou PostgreSQL (Render)"""
+    if DATABASE_URL:
+        import psycopg2
+        import psycopg2.extras
+        conn = psycopg2.connect(DATABASE_URL)
+        return conn
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def get_cursor(conn):
+    """Cursor com acesso por nome de coluna para SQLite e PostgreSQL"""
+    if DATABASE_URL:
+        import psycopg2.extras
+        return conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    return conn.cursor()
 
 def init_db():
-    """Inicializa o banco de dados"""
-    if not os.path.exists(DATABASE):
-        conn = sqlite3.connect(DATABASE)
+    """Inicializa o banco de dados (SQLite ou PostgreSQL)"""
+    if DATABASE_URL:
+        import psycopg2
+        conn = psycopg2.connect(DATABASE_URL)
         cursor = conn.cursor()
-
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS saude (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id SERIAL PRIMARY KEY,
                 data_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                nome text NOT NULL,
+                nome TEXT NOT NULL,
                 consumo_agua INTEGER NOT NULL,
                 minutos_sol INTEGER NOT NULL,
                 pratica_exercicio TEXT NOT NULL,
                 humor TEXT NOT NULL
             )
         ''')
-
+        conn.commit()
+        cursor.close()
+        conn.close()
+        print("✅ PostgreSQL: tabela verificada/criada!")
+    elif not os.path.exists(DATABASE):
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS saude (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                data_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                nome TEXT NOT NULL,
+                consumo_agua INTEGER NOT NULL,
+                minutos_sol INTEGER NOT NULL,
+                pratica_exercicio TEXT NOT NULL,
+                humor TEXT NOT NULL
+            )
+        ''')
         conn.commit()
         conn.close()
-        print("✅ Banco de dados criado com sucesso!")
+        print("✅ Banco de dados SQLite criado com sucesso!")
     else:
         print("ℹ️  Banco de dados já existe!")
 
@@ -109,9 +151,8 @@ def limpar_registro(id):
 
 def gerar_relatorio_excel(caminho_arquivo=None):
     """Gera um relatório Excel com todos os registros do banco de dados"""
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
+    conn = get_db_connection()
+    cursor = get_cursor(conn)
     cursor.execute('SELECT * FROM saude ORDER BY data_registro DESC')
     registros = cursor.fetchall()
     conn.close()
@@ -121,7 +162,7 @@ def gerar_relatorio_excel(caminho_arquivo=None):
         return None
 
     if caminho_arquivo is None:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        timestamp = agora_br().strftime("%Y%m%d_%H%M%S")
         caminho_arquivo = os.path.join(BASE_DIR, f"relatorio_saude_{timestamp}.xlsx")
 
     wb = openpyxl.Workbook()
@@ -147,7 +188,7 @@ def gerar_relatorio_excel(caminho_arquivo=None):
     ws.row_dimensions[1].height = 30
 
     ws.merge_cells("A2:G2")
-    ws["A2"].value     = f"Gerado em: {datetime.now().strftime('%d/%m/%Y às %H:%M:%S')}"
+    ws["A2"].value     = f"Gerado em: {agora_br().strftime('%d/%m/%Y às %H:%M:%S')}"
     ws["A2"].font      = Font(name="Calibri", italic=True, size=10, color="666666")
     ws["A2"].alignment = Alignment(horizontal="center")
     ws.row_dimensions[2].height = 18
@@ -193,68 +234,109 @@ def gerar_relatorio_excel(caminho_arquivo=None):
     return caminho_arquivo
 
 
-def enviar_relatorio_email(destinatario, remetente, senha_app, arquivo_excel=None,
-                           smtp_server="smtp.gmail.com", smtp_port=587):
-    """Gera (se necessário) e envia o relatório Excel por e-mail."""
-    if arquivo_excel is None:
-        arquivo_excel = gerar_relatorio_excel()
-
-    if arquivo_excel is None:
-        print("❌ Não foi possível gerar o relatório. Envio cancelado.")
-        return False
-
-    try:
-        msg = MIMEMultipart()
-        msg["From"]    = f"Monitoramento de Saúde - Resumo <{remetente}>"
-        msg["To"]      = destinatario
-        msg["Subject"] = f"📊 Relatório de Monitoramento de Saúde - {datetime.now().strftime('%d/%m/%Y')}"
-
-        corpo = (
-            "Olá!\n\n"
-            "Segue em anexo o relatório de monitoramento de saúde gerado automaticamente.\n\n"
-            f"Data de geração: {datetime.now().strftime('%d/%m/%Y às %H:%M:%S')}\n\n"
-            "Atenciosamente,\nSistema de Monitoramento de Saúde 🏥"
-        )
-        msg.attach(MIMEText(corpo, "plain", "utf-8"))
-
-        with open(arquivo_excel, "rb") as f:
-            parte = MIMEBase("application", "octet-stream")
-            parte.set_payload(f.read())
-        encoders.encode_base64(parte)
-        parte.add_header("Content-Disposition", f'attachment; filename="{os.path.basename(arquivo_excel)}"')
-        msg.attach(parte)
-
-        with smtplib.SMTP(smtp_server, smtp_port) as servidor:
-            servidor.starttls()
-            servidor.login(remetente, senha_app)
-            servidor.sendmail(remetente, destinatario, msg.as_string())
-
-        print(f"✅ Relatório enviado com sucesso para {destinatario}!")
-        return True
-
-    except smtplib.SMTPAuthenticationError as e:
-        print(f"❌ Erro de autenticação: {e}")
-        return False
-    except smtplib.SMTPException as e:
-        print(f"❌ Erro SMTP: {e}")
-        return False
-    except Exception as e:
-        print(f"❌ Erro inesperado: {e}")
-        return False
-
-
-def configurar_e_enviar():
-    """Envia o relatório por e-mail com credenciais carregadas do .env"""
-    REMETENTE    = os.getenv("EMAIL_REMETENTE")
-    SENHA_APP    = os.getenv("EMAIL_SENHA")
-    DESTINATARIO = os.getenv("EMAIL_DESTINATARIO")
-
-    if not all([REMETENTE, SENHA_APP, DESTINATARIO]):
-        print("❌ Configure EMAIL_REMETENTE, EMAIL_SENHA e EMAIL_DESTINATARIO no arquivo .env")
+def importar_excel(caminho_arquivo):
+    """Importa registros de um Excel gerado pelo sistema para o banco de dados.
+    Ignora registros cujo ID já exista no banco."""
+    if not os.path.exists(caminho_arquivo):
+        print(f"❌ Arquivo não encontrado: {caminho_arquivo}")
         return
 
-    print("\n⏳ Gerando relatório e enviando e-mail...")
-    enviar_relatorio_email(DESTINATARIO, REMETENTE, SENHA_APP)
+    wb = openpyxl.load_workbook(caminho_arquivo)
+    ws = wb.active
+
+    conn = get_db_connection()
+    cursor = get_cursor(conn)
+
+    importados = 0
+    ignorados = 0
+
+    # Dados começam na linha 5 (1=título, 2=data geração, 3=vazia, 4=cabeçalho)
+    for row in ws.iter_rows(min_row=5, values_only=True):
+        id_val, data_registro, nome, consumo_agua, minutos_sol, pratica_exercicio, humor = row
+
+        # Linha do total (última linha) — pula
+        if id_val is None or str(id_val).startswith("Total"):
+            continue
+
+        # Converte data se vier como string
+        if isinstance(data_registro, str):
+            try:
+                data_registro = datetime.strptime(data_registro, "%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                try:
+                    data_registro = datetime.strptime(data_registro, "%d/%m/%Y %H:%M:%S")
+                except ValueError:
+                    data_registro = agora_br()
+
+        try:
+            cursor.execute(
+                f'INSERT INTO saude (data_registro, nome, consumo_agua, minutos_sol, pratica_exercicio, humor) '
+                f'VALUES ({ph()}, {ph()}, {ph()}, {ph()}, {ph()}, {ph()})',
+                (data_registro, str(nome), int(consumo_agua), int(minutos_sol),
+                 str(pratica_exercicio), str(humor))
+            )
+            importados += 1
+        except Exception as e:
+            print(f"⚠️  Linha ignorada (erro: {e})")
+            ignorados += 1
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+    print(f"✅ Importação concluída: {importados} registros inseridos, {ignorados} ignorados.")
+
+
+
+
+def migrar_sqlite_para_postgres():
+    """Exporta todos os dados do SQLite local para o PostgreSQL do Render.
+    Configure DATABASE_URL no .env antes de rodar."""
+    if not DATABASE_URL:
+        print("❌ Defina DATABASE_URL no .env com a URL do PostgreSQL do Render.")
+        return
+    if not os.path.exists(DATABASE):
+        print("❌ Banco SQLite não encontrado.")
+        return
+
+    sqlite_conn = sqlite3.connect(DATABASE)
+    sqlite_conn.row_factory = sqlite3.Row
+    cur_sqlite = sqlite_conn.cursor()
+    cur_sqlite.execute('SELECT * FROM saude ORDER BY id')
+    registros = cur_sqlite.fetchall()
+    sqlite_conn.close()
+
+    if not registros:
+        print("⚠️  Nenhum registro no SQLite para migrar.")
+        return
+
+    import psycopg2
+    pg_conn = psycopg2.connect(DATABASE_URL)
+    pg_cur = pg_conn.cursor()
+    pg_cur.execute('''
+        CREATE TABLE IF NOT EXISTS saude (
+            id SERIAL PRIMARY KEY,
+            data_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            nome TEXT NOT NULL,
+            consumo_agua INTEGER NOT NULL,
+            minutos_sol INTEGER NOT NULL,
+            pratica_exercicio TEXT NOT NULL,
+            humor TEXT NOT NULL
+        )
+    ''')
+    migrados = 0
+    for r in registros:
+        pg_cur.execute(
+            'INSERT INTO saude (data_registro, nome, consumo_agua, minutos_sol, pratica_exercicio, humor) '
+            'VALUES (%s, %s, %s, %s, %s, %s)',
+            (r['data_registro'], r['nome'], r['consumo_agua'],
+             r['minutos_sol'], r['pratica_exercicio'], r['humor'])
+        )
+        migrados += 1
+    pg_conn.commit()
+    pg_cur.close()
+    pg_conn.close()
+    print(f"✅ {migrados} registros migrados com sucesso para o PostgreSQL!")
+
 
 
 def menu():
@@ -267,10 +349,12 @@ def menu():
         print("2. Limpar apenas um registro")
         print("3. Limpar registros (manter banco)")
         print("4. Resetar banco de dados")
-        print("5. Gerar e enviar relatório por e-mail")
-        print("6. Sair")
+        print("5. Gerar relatório Excel")
+        print("6. Importar registros de Excel")
+        print("7. Migrar SQLite → PostgreSQL (Render)")
+        print("8. Sair")
 
-        opcao = input("\nEscolha uma opção (1-6): ")
+        opcao = input("\nEscolha uma opção (1-8): ")
 
         if opcao == '1':
             ver_todos_registros()
@@ -282,8 +366,13 @@ def menu():
         elif opcao == '4':
             resetar_banco()
         elif opcao == '5':
-            configurar_e_enviar()
+            gerar_relatorio_excel()
         elif opcao == '6':
+            arquivo = input("\nCaminho do arquivo Excel: ").strip().strip('"')
+            importar_excel(arquivo)
+        elif opcao == '7':
+            migrar_sqlite_para_postgres()
+        elif opcao == '8':
             print("\n👋 Até logo!")
             break
         else:
@@ -291,3 +380,5 @@ def menu():
 
 if __name__ == '__main__':
     menu()
+
+

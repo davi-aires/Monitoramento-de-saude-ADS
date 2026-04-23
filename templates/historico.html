@@ -162,12 +162,12 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
         }
-        .exportar {
+        .resultados-btn {
             display: inline-block;
             margin-top: 20px;
             margin-left: 12px;
             padding: 10px 24px;
-            background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             border-radius: 6px;
@@ -177,9 +177,9 @@
             text-decoration: none;
             transition: transform 0.2s, box-shadow 0.2s;
         }
-        .exportar:hover {
+        .resultados-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
         }
         /* Modal */
         .modal-overlay {
@@ -219,7 +219,7 @@
             font-size: 13px;
             margin-bottom: 20px;
         }
-        .modal input[type="email"] {
+        .modal input[type="text"] {
             width: 100%;
             padding: 10px 12px;
             border-radius: 6px;
@@ -231,7 +231,7 @@
             margin-bottom: 18px;
             transition: border-color 0.2s;
         }
-        .modal input[type="email"]:focus {
+        .modal input[type="text"]:focus {
             border-color: #667eea;
         }
         .modal-actions {
@@ -255,7 +255,7 @@
             padding: 9px 20px;
             border-radius: 6px;
             border: none;
-            background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             font-size: 14px;
             font-weight: 600;
@@ -264,7 +264,7 @@
         }
         .btn-enviar:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 14px rgba(16,185,129,0.4);
+            box-shadow: 0 4px 14px rgba(102,126,234,0.4);
         }
         .modal-feedback {
             font-size: 13px;
@@ -272,8 +272,7 @@
             min-height: 18px;
             text-align: center;
         }
-        .modal-feedback.sucesso { color: #10b981; }
-        .modal-feedback.erro    { color: #f87171; }
+        .modal-feedback.erro { color: #f87171; }
         @media (max-width: 768px) {
             .container {
                 padding: 20px;
@@ -368,19 +367,19 @@
             </table>
         </div>
         <a href="/" class="voltar">Voltar</a>
-        <button class="exportar" onclick="abrirModal()">📤 Exportar por E-mail</button>
+        <button class="resultados-btn" onclick="irParaResultados()">📊 Ver Resultados</button>
     </div>
 
-    <!-- Modal -->
+    <!-- Modal: pedir nome para resultados -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
-            <h2>📤 Exportar Relatório</h2>
-            <p>Digite o e-mail que receberá o relatório Excel com todos os registros.</p>
-            <input type="email" id="emailDestinatario" placeholder="exemplo@email.com" />
-            <div class="modal-feedback" id="modalFeedback"></div>
+            <h2>📊 Ver Resultados</h2>
+            <p>Digite o nome da pessoa para gerar o resumo de saúde com IA.</p>
+            <input type="text" id="nomeResultados" placeholder="Nome da pessoa" />
+            <div class="modal-feedback erro" id="modalFeedback"></div>
             <div class="modal-actions">
                 <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
-                <button class="btn-enviar" id="btnEnviar" onclick="enviarRelatorio()">Enviar</button>
+                <button class="btn-enviar" onclick="confirmarResultados()">Ver Resultados</button>
             </div>
         </div>
     </div>
@@ -408,67 +407,36 @@
             });
         })();
 
-        // Modal de exportação
-        function abrirModal() {
-            document.getElementById('modalOverlay').classList.add('active');
-            document.getElementById('emailDestinatario').focus();
-            document.getElementById('modalFeedback').textContent = '';
-            document.getElementById('emailDestinatario').value = '';
+        // Modal de resultados
+        function irParaResultados() {
+            const nomeBusca = document.querySelector('.search-input') ? document.querySelector('.search-input').value.trim() : '';
+            if (nomeBusca) {
+                window.location.href = '/resultados?nome=' + encodeURIComponent(nomeBusca);
+            } else {
+                document.getElementById('modalOverlay').classList.add('active');
+                document.getElementById('nomeResultados').focus();
+                document.getElementById('modalFeedback').textContent = '';
+                document.getElementById('nomeResultados').value = '';
+            }
         }
         function fecharModal() {
             document.getElementById('modalOverlay').classList.remove('active');
         }
+        function confirmarResultados() {
+            const nome = document.getElementById('nomeResultados').value.trim();
+            const feedback = document.getElementById('modalFeedback');
+            if (!nome) {
+                feedback.textContent = 'Por favor, informe um nome.';
+                return;
+            }
+            window.location.href = '/resultados?nome=' + encodeURIComponent(nome);
+        }
         document.getElementById('modalOverlay').addEventListener('click', function(e) {
             if (e.target === this) fecharModal();
         });
-        document.getElementById('emailDestinatario').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') enviarRelatorio();
+        document.getElementById('nomeResultados').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') confirmarResultados();
         });
-        async function enviarRelatorio() {
-            const email = document.getElementById('emailDestinatario').value.trim();
-            const feedback = document.getElementById('modalFeedback');
-            const btn = document.getElementById('btnEnviar');
-
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!email) {
-                feedback.textContent = 'Por favor, informe um e-mail.';
-                feedback.className = 'modal-feedback erro';
-                return;
-            }
-            if (!emailRegex.test(email)) {
-                feedback.textContent = 'E-mail inválido. Verifique e tente novamente.';
-                feedback.className = 'modal-feedback erro';
-                return;
-            }
-
-            btn.disabled = true;
-            btn.textContent = 'Enviando...';
-            feedback.textContent = '';
-            feedback.className = 'modal-feedback';
-
-            try {
-                const resp = await fetch('/exportar-email', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ destinatario: email })
-                });
-                const data = await resp.json();
-                if (data.sucesso) {
-                    feedback.textContent = '✅ Relatório enviado com sucesso!';
-                    feedback.className = 'modal-feedback sucesso';
-                    setTimeout(fecharModal, 2000);
-                } else {
-                    feedback.textContent = '❌ ' + data.mensagem;
-                    feedback.className = 'modal-feedback erro';
-                }
-            } catch (err) {
-                feedback.textContent = '❌ Erro ao conectar com o servidor.';
-                feedback.className = 'modal-feedback erro';
-            } finally {
-                btn.disabled = false;
-                btn.textContent = 'Enviar';
-            }
-        }
     </script>
 </body>
 </html>
