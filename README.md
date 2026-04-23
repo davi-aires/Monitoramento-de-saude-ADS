@@ -85,6 +85,7 @@ ADS - Monitoramento de saúde/
 
 A tabela `saude` possui os seguintes campos:
 
+<<<<<<< HEAD
 | Campo | Tipo | Descrição |
 |---|---|---|
 | `id` | INTEGER / SERIAL | Identificador único (chave primária) |
@@ -94,11 +95,23 @@ A tabela `saude` possui os seguintes campos:
 | `minutos_sol` | INTEGER | Minutos de exposição ao sol |
 | `pratica_exercicio` | TEXT | "Sim" ou "Não" |
 | `humor` | TEXT | Ótimo, Bom, Normal ou Ruim |
+=======
+| Campo                 | Tipo             | Descrição                            |
+| --------------------- | ---------------- | -------------------------------------- |
+| `id`                | INTEGER / SERIAL | Identificador único (chave primária) |
+| `data_registro`     | TIMESTAMP        | Data e hora do registro                |
+| `nome`              | TEXT             | Nome do usuário                       |
+| `consumo_agua`      | INTEGER          | Consumo de água em ml                 |
+| `minutos_sol`       | INTEGER          | Minutos de exposição ao sol          |
+| `pratica_exercicio` | TEXT             | "Sim" ou "Não"                        |
+| `humor`             | TEXT             | Ótimo, Bom, Normal ou Ruim            |
+>>>>>>> eb547c6589afacf84c58281abd0a140c59e48ef4
 
 ## 🛠️ Menu de Manutenção (`db_manager.py`)
 
 Execute `python db_manager.py` para acessar o menu interativo:
 
+<<<<<<< HEAD
 | Opção | Função |
 |---|---|
 | 1 | Ver todos os registros |
@@ -119,6 +132,28 @@ Execute `python db_manager.py` para acessar o menu interativo:
 | `GET` | `/historico` | Página de histórico de registros |
 | `GET` | `/resultados?nome=Nome` | Página de resultados individuais com IA |
 | `POST` | `/gerar-resumo` | Gera resumo de saúde via Groq AI |
+=======
+| Opção | Função                                      |
+| ------- | --------------------------------------------- |
+| 1       | Ver todos os registros                        |
+| 2       | Limpar um registro por ID                     |
+| 3       | Limpar todos os registros (mantém estrutura) |
+| 4       | Resetar banco de dados                        |
+| 5       | Gerar relatório Excel                        |
+| 6       | Importar registros de um arquivo Excel        |
+| 7       | Migrar dados SQLite → PostgreSQL             |
+| 8       | Sair                                          |
+
+## 🔌 Endpoints da API
+
+| Método  | Rota                      | Descrição                              |
+| -------- | ------------------------- | ---------------------------------------- |
+| `GET`  | `/`                     | Página principal com formulário        |
+| `POST` | `/salvar`               | Salva um novo registro de saúde         |
+| `GET`  | `/historico`            | Página de histórico de registros       |
+| `GET`  | `/resultados?nome=Nome` | Página de resultados individuais com IA |
+| `POST` | `/gerar-resumo`         | Gera resumo de saúde via Groq AI        |
+>>>>>>> eb547c6589afacf84c58281abd0a140c59e48ef4
 
 ### POST `/salvar` — Exemplo
 
