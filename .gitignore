@@ -48,3 +48,6 @@ wheels/
 # Markdown (exceto README.md)
 *.md
 !README.md
+
+# Exel
+*.xlsx

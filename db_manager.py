@@ -241,6 +241,8 @@ def importar_excel(caminho_arquivo):
         print(f"❌ Arquivo não encontrado: {caminho_arquivo}")
         return
 
+    init_db()  # garante que a tabela existe antes de importar
+
     wb = openpyxl.load_workbook(caminho_arquivo)
     ws = wb.active
 
