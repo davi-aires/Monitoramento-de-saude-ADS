@@ -79,9 +79,13 @@ def historico():
 
         dados = []
         for registro in registros:
+            raw = str(registro['data_registro'])
+            partes = raw[:10].split('-')
+            data_fmt = f"{partes[2]}/{partes[1]}/{partes[0]}" if len(partes) == 3 else raw[:10]
+            hora_fmt = raw[11:16] if len(raw) > 10 else ''
             dados.append({
                 'id': registro['id'],
-                'data': registro['data_registro'],
+                'data': f"{data_fmt} {hora_fmt}".strip(),
                 'nome': registro['nome'],
                 'consumo_agua': registro['consumo_agua'],
                 'minutos_sol': registro['minutos_sol'],
@@ -115,9 +119,13 @@ def resultados():
 
         dados = []
         for registro in registros:
+            raw = str(registro['data_registro'])
+            partes = raw[:10].split('-')
+            data_fmt = f"{partes[2]}/{partes[1]}/{partes[0]}" if len(partes) == 3 else raw[:10]
+            hora_fmt = raw[11:16] if len(raw) > 10 else ''
             dados.append({
                 'id': registro['id'],
-                'data': registro['data_registro'],
+                'data': f"{data_fmt} {hora_fmt}".strip(),
                 'nome': registro['nome'],
                 'consumo_agua': registro['consumo_agua'],
                 'minutos_sol': registro['minutos_sol'],
